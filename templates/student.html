@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard | Performance Analyzer</title>
+    <style>
+        :root {
+            --gnc-navy: #002147;
+            --gnc-gold: #ff9800;
+            --success: #2e7d32;
+            --danger: #d32f2f;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            /* --- BACKGROUND IMAGE SETTINGS --- */
+            background: url("{{ url_for('static', filename='images/student_bg.png') }}") no-repeat center center fixed; 
+            background-size: cover;
+        }
+
+        /* Container with semi-transparent background for readability */
+        .container { 
+            max-width: 900px; 
+            margin: auto; 
+            background: rgba(248, 249, 250, 0.85); 
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(5px); /* Modern blur effect */
+        }
+
+        /* AI PREDICTION CARD */
+        .ai-card {
+            background: linear-gradient(135deg, var(--gnc-navy), #004aad);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0,33,71,0.2);
+        }
+
+        .prediction-box {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--gnc-gold);
+            padding: 15px 30px;
+            border-radius: 50px;
+            margin-top: 15px;
+        }
+
+        .score { font-size: 32px; font-weight: bold; color: var(--gnc-gold); }
+
+        /* PERFORMANCE TABLE */
+        .report-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        h2 { color: var(--gnc-navy); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background: rgba(241, 241, 241, 0.8); padding: 12px; text-align: left; font-size: 13px; text-transform: uppercase; color: #333; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; color: #111; }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .needs { background: #ffebee; color: var(--danger); border: 1px solid #ffcdd2; }
+        .cleared { background: #e8f5e9; color: var(--success); border: 1px solid #c8e6c9; }
+
+        .logout-btn {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--danger);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .logout-btn:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="ai-card">
+            <p style="margin:0; opacity: 0.8;">Welcome, <strong>{{ student_name }}</strong></p>
+            <h1 style="margin: 10px 0;">Academic Performance Analysis</h1>
+            
+            <div class="prediction-box">
+                AI Predicted Final Score: <span class="score">{{ prediction }}%</span>
+            </div>
+            <p style="font-size: 12px; margin-top: 15px; opacity: 0.7;">* Prediction is based on your current Mid-Term and Model Exam trends.</p>
+        </div>
+
+        <div class="report-card">
+            <h2>Detailed Subject Report</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Semester</th>
+                        <th>Subject</th>
+                        <th>Mid-Term</th>
+                        <th>Model Exam</th>
+                        <th>Academic Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in subjects %}
+                    <tr>
+                        <td><strong>Semester {{ s.semester }}</strong></td>
+                        <td>{{ s.subject_name }}</td>
+                        <td>{{ s.mid_term_marks }} / 100</td>
+                        <td>{{ s.model_marks }} / 100</td>
+                        <td>
+                            {% if s.mid_needs_remedial == 1 or s.model_needs_remedial == 1 %}
+                                <span class="badge needs">🔴 Needs Remedial</span>
+                            {% else %}
+                                <span class="badge cleared">🟢 Cleared</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div style="text-align: right;">
+                <a href="/logout" class="logout-btn">Logout Securely</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

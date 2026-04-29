@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>R.R College Remedial Report | Export Center</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: 'Times New Roman', serif; padding: 30px; background: #fff; color: #000; }
+        .header { text-align: center; border-bottom: 2px solid #000; margin-bottom: 20px; padding-bottom: 10px; }
+        
+        /* DOWNLOAD BAR */
+        .download-bar { 
+            background: #f8f9fa; padding: 15px; border-radius: 8px; 
+            margin-bottom: 25px; border: 1px solid #ddd; text-align: center; 
+        }
+        .btn { 
+            padding: 8px 15px; margin: 5px; border: none; border-radius: 4px; 
+            cursor: pointer; font-weight: bold; font-size: 13px; color: white;
+        }
+        .btn-pdf { background: #d32f2f; }
+        .btn-excel { background: #2e7d32; }
+        .btn-word { background: #0d47a1; }
+        .btn-txt { background: #455a64; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: center; }
+        th { background: #eeeeee; }
+
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body>
+
+    <div class="no-print download-bar">
+        <h3 style="margin-top:0;">📂 Download Remedial Report</h3>
+        <button class="btn btn-pdf" onclick="window.print()">Download PDF</button>
+        <button class="btn btn-excel" onclick="exportExcel()">Export to Excel (.xlsx)</button>
+        <button class="btn btn-word" onclick="exportWord()">Export to Word (.doc)</button>
+        <button class="btn btn-txt" onclick="exportTxt()">Download as Text (.txt)</button>
+    </div>
+
+    <div id="report-content">
+        <div class="header">
+            <h1>R.R COLLEGE (AUTONOMOUS)</h1>
+            <h2>REMEDIAL ASSESSMENT RECORD - 
+                {% if current_sem and current_sem != "All" %} SEMESTER {{ current_sem }} {% else %} ALL SEMESTERS {% endif %}
+            </h2>
+            <p><strong>Report Generated on:</strong> {{ today }}</p>
+        </div>
+
+        <table id="remedialTable">
+            <thead>
+                <tr>
+                    <th>Roll No</th>
+                    <th>Name</th>
+                    <th>Sem</th>
+                    <th>Subject</th>
+                    <th>Original Marks</th>
+                    <th>Coaching Atten%</th>
+                    <th>Topics Covered</th>
+                    <th>Retest Marks</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                <tr>
+                    <td>{{ s.roll_no }}</td>
+                    <td>{{ s.name }}</td>
+                    <td>{{ s.semester }}</td>
+                    <td>{{ s.subject_name }}</td>
+                    <td>M:{{ s.mid_term_marks }} | E:{{ s.model_marks }}</td>
+                    <td>M:{{ s.mid_rem_attendance }}% | E:{{ s.model_rem_attendance }}%</td>
+                    <td>Mid:{{ s.mid_rem_topics }} | Mod:{{ s.model_rem_topics }}</td>
+                    <td>M:{{ s.mid_rem_marks }} | E:{{ s.model_rem_marks }}</td>
+                    <td><strong>{{ 'PASSED' if (s.mid_rem_marks >= 50 or s.mid_term_marks >= 50) and (s.model_rem_marks >= 50 or s.model_marks >= 50) else 'RE-APPEAR' }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // 1. EXCEL EXPORT
+        function exportExcel() {
+            var table = document.getElementById("remedialTable");
+            var wb = XLSX.utils.table_to_book(table, {sheet: "Remedial Report"});
+            XLSX.writeFile(wb, "R.R College_Remedial_Report.xlsx");
+        }
+
+        // 2. WORD EXPORT (.doc)
+        function exportWord() {
+            var content = document.getElementById("report-content").innerHTML;
+            var header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'></head><body>";
+            var footer = "</body></html>";
+            var sourceHTML = header + content + footer;
+            
+            var source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+            var fileDownload = document.createElement("a");
+            document.body.appendChild(fileDownload);
+            fileDownload.href = source;
+            fileDownload.download = 'R.R College_Remedial_Report.doc';
+            fileDownload.click();
+            document.body.removeChild(fileDownload);
+        }
+
+        // 3. TEXT EXPORT (.txt)
+        function exportTxt() {
+            let table = document.getElementById("remedialTable");
+            let data = "";
+            for (let i = 0; i < table.rows.length; i++) {
+                let row = table.rows[i];
+                for (let j = 0; j < row.cells.length; j++) {
+                    data += row.cells[j].innerText + "\t";
+                }
+                data += "\n";
+            }
+            var blob = new Blob([data], { type: "text/plain" });
+            var anchor = document.createElement("a");
+            anchor.download = "R.R College_Remedial_Report.txt";
+            anchor.href = window.URL.createObjectURL(blob);
+            anchor.click();
+        }
+    </script>
+</body>
+</html>

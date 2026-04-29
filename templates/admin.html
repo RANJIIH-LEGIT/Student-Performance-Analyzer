@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Dashboard | Master Records</title>
+    <style>
+        :root { --navy: #002147; --green: #28a745; --red: #d32f2f; }
+        
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            /* --- BACKGROUND IMAGE SETTINGS --- */
+            background: url("{{ url_for('static', filename='images/admin_bg.jpeg') }}") no-repeat center center fixed; 
+            background-size: cover;
+        }
+
+        /* Semi-transparent overlay for the whole page content */
+        .container { 
+            padding: 25px; 
+            max-width: 1200px; 
+            margin: auto; 
+            min-height: 100vh;
+            background: rgba(244, 247, 246, 0.4); 
+        }
+
+        .box { 
+            background: rgba(255, 255, 255, 0.92); /* Semi-transparent white */
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15); 
+            margin-bottom: 25px; 
+            backdrop-filter: blur(5px); /* Modern blur effect */
+        }
+        
+        /* NAVIGATION BAR */
+        .nav { 
+            background: rgba(0, 33, 71, 0.95); 
+            color: white; 
+            padding: 15px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav h2 { margin: 0; font-size: 20px; }
+        .nav-links a { color: white; text-decoration: none; margin-left: 20px; font-weight: bold; font-size: 14px; transition: 0.3s; }
+        .nav-links a:hover { color: #ff9800; }
+
+        /* FORM STYLING */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-top: 15px; }
+        input { padding: 12px; border: 1px solid #ddd; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 13px; background: white; }
+        .save-btn { background: var(--green); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; padding: 10px; }
+        .save-btn:hover { background: #218838; transform: translateY(-1px); }
+
+        /* TABLE STYLING */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: transparent; }
+        th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #f8f9fa; color: #333; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .pill { background: #e3f2fd; color: #0d47a1; padding: 5px 10px; border-radius: 20px; font-size: 11px; margin: 2px; display: inline-block; font-weight: bold; border: 1px solid #bbdefb; }
+        
+        /* STATUS BADGES */
+        .status-badge { padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; }
+        .needs-rem { background: #ffebee; color: var(--red); border: 1px solid #ffcdd2; }
+        .all-clear { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+
+        .btn-del { border: 1px solid var(--red); color: var(--red); background: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; transition: 0.2s; }
+        .btn-del:hover { background: var(--red); color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="nav">
+        <h2>👨‍🏫 Staff Portal</h2>
+        <div class="nav-links">
+            <a href="/admin" style="color: #4CAF50;">📊 Master List</a>
+            <a href="/remedial">⚠️ Remedial Section</a>
+            <a href="/logout" style="color: #ff9800;">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="box">
+            <h3>📝 New Student Assessment Entry</h3>
+            <form action="/add" method="POST" class="form-grid">
+                <input type="text" name="name" placeholder="Full Name" required>
+                <input type="text" name="roll_no" placeholder="Roll Number" required>
+                <input type="password" name="password" placeholder="Set Password" required>
+                <input type="number" name="semester" placeholder="Semester (1-6)" min="1" max="6" required>
+                <input type="text" name="subject" placeholder="Subject Name" required>
+                <input type="number" step="0.1" name="mid_term" placeholder="Mid Marks" required>
+                <input type="number" step="0.1" name="model_exam" placeholder="Model Marks" required>
+                <button type="submit" class="save-btn">Save Record</button>
+            </form>
+        </div>
+
+        <div class="box">
+            <h3>🎓 Master Student Performance Records</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Roll No</th>
+                        <th style="width: 20%;">Full Name</th>
+                        <th style="width: 35%;">Assessment Details (By Subject)</th>
+                        <th style="width: 20%;">Academic Status</th>
+                        <th style="width: 10%;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in students %}
+                    <tr>
+                        <td><strong>{{ s.roll_no }}</strong></td>
+                        <td>{{ s.name }}</td>
+                        <td>
+                            {% if s.all_marks %}
+                                {% set subject_list = s.all_marks.split(' | ') %}
+                                {% for item in subject_list %}
+                                    <div class="pill">{{ item }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if s.fail_mid == 1 or s.fail_mod == 1 %}
+                                <span class="status-badge needs-rem">🔴 Needs Remedial</span>
+                            {% else %}
+                                <span class="status-badge all-clear">🟢 Passed</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form action="/delete/{{ s.roll_no }}" method="POST">
+                                <button type="submit" class="btn-del" onclick="return confirm('Delete all records for this student?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>

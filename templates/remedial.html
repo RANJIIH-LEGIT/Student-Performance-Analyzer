@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Remedial Management | R.R College</title>
+    <style>
+        :root { --orange: #d84315; --navy: #002147; --bg: #fffbf0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        .nav { background: var(--navy); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .nav a { color: white; text-decoration: none; margin-left: 20px; font-weight: bold; }
+        .container { padding: 30px; max-width: 1000px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 10px solid var(--orange); display: flex; justify-content: space-between; align-items: center; }
+        .remedial-form { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #f9f9f9; padding: 10px; border-radius: 8px; }
+        .filter-box { text-align: center; background: #e3f2fd; border: 1px solid #90caf9; padding: 20px; border-radius: 12px; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <h2>Remedial Portal</h2>
+        <div><a href="/admin">Dashboard</a> | <a href="/logout">Logout</a></div>
+    </div>
+    <div class="container">
+        <h3>📝 Pending Remedial Actions</h3>
+        {% for s in students %}
+        <div class="card">
+            <div>
+                <strong>{{ s.name }} (Sem {{ s.semester }})</strong><br>
+                Sub: {{ s.subject_name }} | Roll: {{ s.roll_no }}
+            </div>
+            <form action="/update_remedial" method="POST" class="remedial-form">
+                <input type="hidden" name="student_id" value="{{ s.id }}">
+                <select name="exam_type" required><option value="mid">Mid-Term</option><option value="model">Model</option></select>
+                <input type="number" step="0.1" name="rem_attendance" placeholder="Atten %" required>
+                <input type="text" name="topics" placeholder="Topics Covered" style="grid-column: span 2;" required>
+                <input type="number" step="0.1" name="rem_marks" placeholder="Retest Marks" style="grid-column: span 2;" required>
+                <button type="submit" style="grid-column: span 2; background: var(--navy); color: white; border: none; padding: 8px; cursor: pointer;">Update Record</button>
+            </form>
+        </div>
+        {% endfor %}
+
+        <div class="filter-box">
+            <h3>📄 Step 3: Generate Filtered Report</h3>
+            <form action="/generate_report" method="GET" target="_blank">
+                <select name="semester" style="padding: 10px; width: 200px;">
+                    <option value="All">All Semesters</option>
+                    <option value="1">Semester 1</option><option value="2">Semester 2</option>
+                    <option value="3">Semester 3</option><option value="4">Semester 4</option>
+                    <option value="5">Semester 5</option><option value="6">Semester 6</option>
+                </select>
+                <button type="submit" style="padding: 10px; background: var(--navy); color: white; cursor: pointer;">View Filtered Report</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
